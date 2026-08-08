@@ -11,9 +11,11 @@ dist-ssr
 .vinxi
 __unconfig*
 todos.json
+vite-test.log
 
 /src/generated/prisma
 /src/components/ui/
+styles.css
 
 skills-lock.json
 .cta.json

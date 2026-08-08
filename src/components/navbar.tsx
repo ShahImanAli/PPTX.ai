@@ -7,6 +7,7 @@ import { Button } from './ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -57,7 +58,7 @@ export default function Navbar() {
               <Presentation className="size-5 text-primary-foreground" />
             </div>
             <span className="font-semibold text-lg text-foreground">
-              PPT<span className="text-primary">.ai</span>
+              PPTX<span className="text-primary">.ai</span>
             </span>
           </Link>
 
@@ -82,38 +83,42 @@ export default function Navbar() {
               <div className="size-9 rounded-full bg-muted animate-pulse" />
             ) : session?.user ? (
               <DropdownMenu>
-                <DropdownMenuTrigger>
-                  <Button
-                    variant="ghost"
-                    className="relative size-9 rounded-full p-0"
-                  >
-                    <Avatar className="size-9 border-2 border-primary/30">
-                      <AvatarImage
-                        src={session.user.image ?? undefined}
-                        alt={session.user.name}
-                      />
-                      <AvatarFallback className="bg-primary/10 text-primary font-medium">
-                        {session.user.name ? (
-                          session.user.name.charAt(0).toUpperCase()
-                        ) : (
-                          <User className="size-4" />
-                        )}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Button>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      className="relative size-9 rounded-full p-0"
+                    />
+                  }
+                >
+                  <Avatar className="size-9 border-2 border-primary/30">
+                    <AvatarImage
+                      src={session.user.image ?? undefined}
+                      alt={session.user.name}
+                    />
+                    <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                      {session.user.name ? (
+                        session.user.name.charAt(0).toUpperCase()
+                      ) : (
+                        <User className="size-4" />
+                      )}
+                    </AvatarFallback>
+                  </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-56 glass border-border/50"
+                  className="w-60 glass ring-0"
                 >
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col gap-1">
-                      <p className="text-sm font-medium">{session.user.name}</p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {session.user.email}
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col gap-1">
+                        <p className="text-sm font-medium">{session.user.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {session.user.email}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                  </DropdownMenuGroup>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleSignOut}

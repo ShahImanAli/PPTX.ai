@@ -1,6 +1,7 @@
 import {
   HeadContent,
   Link,
+  Outlet,
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router'
@@ -15,6 +16,7 @@ import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
 import appCss from '../styles.css?url'
 
 import type { QueryClient } from '@tanstack/react-query'
+import Navbar from '#/components/navbar.tsx'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -41,6 +43,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
   }),
+  component: RootLayout,
   shellComponent: RootDocument,
   notFoundComponent: NotFound,
 })
@@ -61,6 +64,15 @@ function NotFound() {
           Go home
         </Link>
       </div>
+    </div>
+  )
+}
+
+function RootLayout() {
+  return (
+    <div className="min-h-svh">
+      <Navbar />
+      <Outlet />
     </div>
   )
 }

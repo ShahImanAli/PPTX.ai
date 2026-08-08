@@ -1,13 +1,26 @@
-import { createFileRoute } from '@tanstack/react-router'
-import ThemeToggle from '@/components/ThemeToggle'
-export const Route = createFileRoute('/')({ component: Home })
+import { createFileRoute, redirect } from '@tanstack/react-router'
+import { getSession } from '#/lib/auth.functions'
+
+export const Route = createFileRoute('/')({
+  beforeLoad: async ({ location }) => {
+    const session = await getSession()
+    if (!session) {
+      throw redirect({
+        to: '/login',
+        search: { redirect: location.href },
+      })
+    }
+    return { user: session.user }
+  },
+  component: Home,
+})
 
 function Home() {
   return (
-    <div className='w-full h-screen flex justify-center items-center'>
-      <ThemeToggle/>
-
-    </div>
+    <main className="min-h-screen pt-24 pb-12 px-4">
+      <div className='max-w-5xl mx-auto'>
+        <h1>hello</h1>
+      </div>
+    </main>
   )
 }
-
