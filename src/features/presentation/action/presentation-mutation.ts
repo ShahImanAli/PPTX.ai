@@ -8,6 +8,7 @@ import { authFnMiddleware } from '#/middlewares/auth.ts'
 import { prisma } from '#/lib/db.ts'
 import { generateSlug } from 'random-word-slugs'
 import { PresentationStatus } from '#/generated/prisma/browser.ts'
+import { generatePresentationSlides } from '#/integrations/inngest/generate.ts'
 
 export const createPresentation = createServerFn({
   method: 'POST',
@@ -15,7 +16,6 @@ export const createPresentation = createServerFn({
   .inputValidator((data: unknown) => createPresentationInputSchema.parse(data))
   .middleware([authFnMiddleware])
   .handler(async ({ data, context }) => {
-
     const userId = context?.session?.user?.id
 
     const presentation = await prisma.presentation.create({
@@ -27,10 +27,22 @@ export const createPresentation = createServerFn({
         style: data.style,
         tone: data.tone,
         layout: data.layout,
-        status: PresentationStatus.COMPLETED,
+        status: PresentationStatus.GENERATING,
       },
-      //TODO:Inngest bg job trigger
     })
+
+    // Fire-and-forget generation so the request returns quickly.
+    // The UI polls the presentation status while it's GENERATING.
+    generatePresentationSlides(presentation.id).catch((error) => {
+      console.error('Failed to generate presentation:', error)
+      prisma.presentation
+        .update({
+          where: { id: presentation.id },
+          data: { status: PresentationStatus.FAILED },
+        })
+        .catch(() => {})
+    })
+
     return presentation
   })
 
@@ -40,7 +52,6 @@ export const updatePresentation = createServerFn({
   .inputValidator((data: unknown) => updatePresentationInputSchema.parse(data))
   .middleware([authFnMiddleware])
   .handler(async ({ data, context }) => {
-
     const userId = context?.session?.user?.id
 
     const { id, ...patch } = data
@@ -72,7 +83,6 @@ export const deletePresentation = createServerFn({
   .inputValidator((data: unknown) => presentationIdInputSchema.parse(data))
   .middleware([authFnMiddleware])
   .handler(async ({ data, context }) => {
-
     const userId = context?.session?.user?.id
 
     const existing = await prisma.presentation.findFirst({
@@ -98,9 +108,8 @@ export const regeneratePresentation = createServerFn({ method: 'POST' })
   .inputValidator((data: unknown) => presentationIdInputSchema.parse(data))
   .middleware([authFnMiddleware])
   .handler(async ({ data, context }) => {
-
     const userId = context?.session?.user?.id
-    
+
     const existing = await prisma.presentation.findFirst({
       where: { id: data.id, userId },
     })
@@ -111,10 +120,17 @@ export const regeneratePresentation = createServerFn({ method: 'POST' })
       data: { status: PresentationStatus.GENERATING },
     })
 
-    // await inngest.send({
-    //   name: 'presentation/generate',
-    //   data: { presentationId: data.id },
-    // })
+    // Fire-and-forget generation so the request returns quickly.
+    // The UI polls the presentation status while it's GENERATING.
+    generatePresentationSlides(data.id).catch((error) => {
+      console.error('Failed to regenerate presentation:', error)
+      prisma.presentation
+        .update({
+          where: { id: data.id },
+          data: { status: PresentationStatus.FAILED },
+        })
+        .catch(() => {})
+    })
 
     return { ok: true as const }
   })
