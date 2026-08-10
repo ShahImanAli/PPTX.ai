@@ -3,9 +3,11 @@ import {
   LAYOUT_OPTIONS,
   SLIDE_STYLES,
   TONE_OPTIONS,
+  exportToPptx,
   presentationThumbnailUrl,
   usePresentationDetail,
 } from '#/features/presentation'
+import { toast } from 'sonner'
 import { GenerationStatus } from '#/features/presentation/components/generation-status'
 import { SlideCard } from '#/features/presentation/components/slide-card'
 import { SlidePreview } from '#/features/presentation/components/slide-preview'
@@ -61,8 +63,8 @@ function PresentationDetailPage() {
   const [activeSlideIndex, setActiveSlideIndex] = useState(0)
   const [showSettings, setShowSettings] = useState(false)
   const [showSlideshow, setShowSlideshow] = useState(false)
-  const [isExporting] = useState(false)
   const [isFullscreen, setIsFullscreen] = useState(false)
+  const [isExporting, setIsExporting] = useState(false)
 
   const {
     query,
@@ -77,6 +79,54 @@ function PresentationDetailPage() {
   } = usePresentationDetail(presentationId, {
     onDeleted: () => navigate({ to: '/' }),
   })
+
+  const toggleFullscreen = useCallback(() => {
+    setIsFullscreen((prev) => !prev)
+  }, [])
+
+  const goToSlide = useCallback(
+    (index: number) => {
+      setActiveSlideIndex(Math.max(0, Math.min(slides.length - 1, index)))
+    },
+    [slides.length],
+  )
+
+  useEffect(() => {
+    if (!isFullscreen) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsFullscreen(false)
+      } else if (e.key === 'ArrowRight') {
+        goToSlide(activeSlideIndex + 1)
+      } else if (e.key === 'ArrowLeft') {
+        goToSlide(activeSlideIndex - 1)
+      }
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [isFullscreen, activeSlideIndex, goToSlide])
+
+
+   const handleExportPptx = useCallback(async () => {
+     const data = query.data
+     if (!data) return
+     const slidesToExport = slides
+     if (slidesToExport.length === 0) return
+
+     setIsExporting(true)
+     try {
+       const filename = await exportToPptx({
+         title: data.title,
+         slides: slidesToExport,
+       })
+       toast.success(`Exported as ${filename}`)
+     } catch (e) {
+       toast.error(e instanceof Error ? e.message : 'Export failed')
+     } finally {
+       setIsExporting(false)
+     }
+   }, [query.data, slides])
+
 
   if (query.isPending) {
     return (
@@ -107,32 +157,6 @@ function PresentationDetailPage() {
   const data = query.data
   const thumb = presentationThumbnailUrl(data.id)
   const activeSlide = slides.at(activeSlideIndex)
-
-  const toggleFullscreen = useCallback(() => {
-    setIsFullscreen((prev) => !prev)
-  }, [])
-
-  const goToSlide = useCallback(
-    (index: number) => {
-      setActiveSlideIndex(Math.max(0, Math.min(slides.length - 1, index)))
-    },
-    [slides.length],
-  )
-
-  useEffect(() => {
-    if (!isFullscreen) return
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsFullscreen(false)
-      } else if (e.key === 'ArrowRight') {
-        goToSlide(activeSlideIndex + 1)
-      } else if (e.key === 'ArrowLeft') {
-        goToSlide(activeSlideIndex - 1)
-      }
-    }
-    window.addEventListener('keydown', onKeyDown)
-    return () => window.removeEventListener('keydown', onKeyDown)
-  }, [isFullscreen, activeSlideIndex, goToSlide])
 
   return (
     <main className="min-h-screen pt-24 pb-12 px-4">
@@ -188,7 +212,7 @@ function PresentationDetailPage() {
                       variant="outline"
                       size="sm"
                       className="rounded-xl gap-1"
-                      // onClick={handleExportPptx}
+                      onClick={handleExportPptx}
                       disabled={isExporting}
                     >
                       <Download className="size-4" />
@@ -351,7 +375,9 @@ function PresentationDetailPage() {
 
                 <div className="flex flex-wrap justify-between gap-3 pt-2">
                   <AlertDialog>
-                    <AlertDialogTrigger>
+                    <AlertDialogTrigger
+                      render={<span className="inline-flex" />}
+                    >
                       <Button
                         type="button"
                         variant="destructive"
