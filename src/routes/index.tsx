@@ -20,7 +20,7 @@ import { PRESENTATION_TEMPLATES } from '#/features/presentation/constant/present
 import { presentationQueryKeys } from '#/features/presentation/hooks/query-keys'
 import { getSession } from '#/lib/auth.functions'
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   AlignLeft,
   LayoutTemplate,
@@ -31,6 +31,8 @@ import {
   Wand2,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { listPresentations } from '#/features/presentation/action/presentation-query.ts';
+import { PresentationListSection } from '#/features/presentation/components/presentation-list-section.tsx';
 
 type HomeFormState = {
   content: string
@@ -68,6 +70,12 @@ function Home() {
   const charCount = form.content.length
   const maxChars = 5000
   const charPercent = Math.min((charCount / maxChars) * 100, 100)
+
+
+  const { data: presentations, isPending: listPending } = useQuery({
+    queryKey: presentationQueryKeys.list(),
+    queryFn: () => listPresentations(),
+  })
 
   const createMutation = useMutation({
     mutationFn: () =>
@@ -108,6 +116,10 @@ function Home() {
   return (
     <main className="min-h-screen pt-24 pb-16 px-4">
       <div className="max-w-4xl mx-auto">
+        <PresentationListSection
+          presentations={presentations ?? []}
+          isPending={listPending}
+        />
         {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-bold mb-3 tracking-tight">
