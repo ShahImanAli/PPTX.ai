@@ -116,10 +116,6 @@ function Home() {
   return (
     <main className="min-h-screen pt-24 pb-16 px-4">
       <div className="max-w-4xl mx-auto">
-        <PresentationListSection
-          presentations={presentations ?? []}
-          isPending={listPending}
-        />
         {/* Header */}
         <div className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-bold mb-3 tracking-tight">
@@ -344,6 +340,13 @@ function Home() {
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="mt-12">
+          <PresentationListSection
+            presentations={presentations ?? []}
+            isPending={listPending}
+          />
         </div>
       </div>
     </main>
