@@ -40,6 +40,7 @@ import {
   ChevronRight,
   Download,
   Maximize,
+  Minimize,
   Play,
   RefreshCw,
   Save,
@@ -512,30 +513,32 @@ function PresentationDetailPage() {
         <div className="fixed inset-0 z-50 bg-black">
           <SlidePreview slide={activeSlide} isFullscreen />
           <Button
-            variant="ghost"
+            variant="secondary"
             size="icon"
-            className="absolute top-4 right-4 rounded-lg text-white/80 hover:text-white hover:bg-white/10"
+            title="Exit fullscreen (Esc)"
+            aria-label="Exit fullscreen"
+            className="absolute top-4 right-4 z-20 rounded-xl bg-black/50 text-white hover:text-white hover:bg-black/70 border border-white/20 shadow-lg"
             onClick={toggleFullscreen}
           >
-            <Maximize className="size-5 rotate-45" />
+            <Minimize className="size-5" />
           </Button>
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4">
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-lg text-white/80 hover:text-white hover:bg-white/10"
+              className="rounded-lg text-white hover:text-white hover:bg-white/20 bg-black/40"
               disabled={activeSlideIndex === 0}
               onClick={() => goToSlide(activeSlideIndex - 1)}
             >
               <ChevronLeft className="size-6" />
             </Button>
-            <span className="text-sm text-white/80 tabular-nums">
+            <span className="text-sm text-white/90 tabular-nums bg-black/40 px-3 py-1 rounded-full">
               {activeSlideIndex + 1} / {slides.length}
             </span>
             <Button
               variant="ghost"
               size="icon"
-              className="rounded-lg text-white/80 hover:text-white hover:bg-white/10"
+              className="rounded-lg text-white hover:text-white hover:bg-white/20 bg-black/40"
               disabled={activeSlideIndex >= slides.length - 1}
               onClick={() => goToSlide(activeSlideIndex + 1)}
             >

@@ -31,42 +31,39 @@ export function SlidePreview({ slide, isFullscreen }: SlidePreviewProps) {
             src={slide.imageUrl}
             alt=""
             className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-              isFullscreen
-                ? imageLoaded
-                  ? 'opacity-50'
-                  : 'opacity-0'
-                : imageLoaded
-                  ? 'opacity-30'
-                  : 'opacity-0'
+              imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
             onLoad={() => setImageLoaded(true)}
             onError={() => setImageLoaded(false)}
           />
         )}
+        {!isFullscreen && (
+          <div className="absolute inset-0 bg-linear-to-r from-background/90 via-background/50 to-transparent" />
+        )}
         {isFullscreen && (
-          <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-black/30" />
+          <div className="absolute inset-0 bg-linear-to-r from-black/80 via-black/40 to-transparent" />
         )}
         <div
           className={`relative z-10 h-full flex flex-col justify-center ${
             isFullscreen
-              ? 'p-12 md:p-20 lg:p-28 items-center text-center'
+              ? 'p-12 md:p-20 lg:p-28 items-start text-left'
               : 'p-8 md:p-12'
           }`}
         >
           <h2
-            className={`font-bold mb-4 ${
+            className={`font-bold mb-4 drop-shadow-lg ${
               isFullscreen
-                ? 'text-4xl md:text-6xl lg:text-7xl text-white'
-                : 'text-2xl md:text-4xl'
+                ? 'text-4xl md:text-6xl lg:text-7xl text-white max-w-3xl'
+                : 'text-2xl md:text-4xl text-foreground'
             }`}
           >
             {slide.title}
           </h2>
           <div
-            className={`whitespace-pre-line ${
+            className={`whitespace-pre-line drop-shadow-md ${
               isFullscreen
-                ? 'text-xl md:text-2xl lg:text-3xl text-white/80 max-w-4xl'
-                : 'text-base md:text-lg text-muted-foreground max-w-2xl'
+                ? 'text-xl md:text-2xl lg:text-3xl text-white max-w-2xl'
+                : 'text-base md:text-lg text-foreground max-w-xl'
             }`}
           >
             {slide.content}
