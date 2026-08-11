@@ -1,9 +1,9 @@
-import type { Presentation } from '../types/presentation.types'
+import type { PresentationListItem } from '../types/presentation.types'
 
 import { PresentationCard } from './presentation-card'
 
 type PresentationListSectionProps = {
-  presentations: Presentation[]
+  presentations: PresentationListItem[]
   isPending: boolean
 }
 

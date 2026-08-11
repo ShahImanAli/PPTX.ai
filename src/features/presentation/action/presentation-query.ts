@@ -9,6 +9,13 @@ export const listPresentations = createServerFn({ method: 'GET' }).handler(
     return prisma.presentation.findMany({
       where: { userId },
       orderBy: { updatedAt: 'desc' },
+      include: {
+        slides: {
+          orderBy: { order: 'asc' },
+          take: 1,
+          select: { imageUrl: true },
+        },
+      },
     })
   },
 )
