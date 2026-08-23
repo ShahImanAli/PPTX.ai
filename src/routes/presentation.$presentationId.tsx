@@ -127,7 +127,11 @@ function PresentationDetailPage() {
     const el = document.documentElement as FullscreenElement
     try {
       if (el.requestFullscreen) {
-        void el.requestFullscreen().catch(() => {})
+        el.requestFullscreen().catch(() => {
+          toast.info(
+            'Native fullscreen blocked by browser — using in-page view',
+          )
+        })
       } else if (el.webkitRequestFullscreen) {
         void el.webkitRequestFullscreen()
       }
@@ -255,7 +259,7 @@ function PresentationDetailPage() {
 
   const data = query.data
   const thumb = presentationThumbnailUrl(data.id)
-  const activeSlide = slides.at(activeSlideIndex)
+  const activeSlide = slides.at(activeSlideIndex) ?? slides.at(0)
 
   return (
     <main className="min-h-screen pt-24 pb-12 px-4">
@@ -306,6 +310,15 @@ function PresentationDetailPage() {
                     >
                       <Play className="size-4" />
                       <span className="hidden sm:inline">Slideshow</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-xl gap-1"
+                      onClick={toggleFullscreen}
+                    >
+                      <Maximize className="size-4" />
+                      <span className="hidden sm:inline">Fullscreen</span>
                     </Button>
                     <Button
                       variant="outline"
@@ -536,7 +549,9 @@ function PresentationDetailPage() {
                   <Button
                     variant="secondary"
                     size="icon"
-                    className="absolute top-3 right-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Fullscreen (Esc to exit)"
+                    aria-label="Toggle fullscreen"
+                    className="absolute top-3 right-3 rounded-lg"
                     onClick={toggleFullscreen}
                   >
                     <Maximize className="size-4" />
