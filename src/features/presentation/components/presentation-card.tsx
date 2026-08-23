@@ -86,19 +86,19 @@ export function PresentationCard({ presentation: p }: PresentationCardProps) {
 
       <AlertDialog>
         <AlertDialogTrigger
-          render={<span className="absolute top-2 right-2 z-10" />}
-        >
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            aria-label={`Delete ${p.title}`}
-            className="size-8 rounded-lg bg-black/40 text-white border border-white/20 backdrop-blur hover:bg-destructive/90 hover:text-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
-            disabled={deleteMut.isPending}
-          >
-            <Trash2 className="size-4" />
-          </Button>
-        </AlertDialogTrigger>
+          render={
+            <Button
+              type="button"
+              variant="secondary"
+              size="icon"
+              aria-label={`Delete ${p.title}`}
+              className="absolute top-2 right-2 z-10 size-8 rounded-lg bg-black/40 text-white border border-white/20 backdrop-blur hover:bg-destructive/90 hover:text-white opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
+              disabled={deleteMut.isPending}
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          }
+        />
         <AlertDialogContent className="glass">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete presentation?</AlertDialogTitle>
