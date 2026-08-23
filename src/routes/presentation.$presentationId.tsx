@@ -540,7 +540,7 @@ function PresentationDetailPage() {
         activeSlide &&
         createPortal(
           <div
-            className="fixed inset-0 z-9999 bg-black"
+            className="fixed inset-0 z-[9999] bg-black"
             style={{ position: 'fixed', inset: 0 }}
           >
             <SlidePreview slide={activeSlide} isFullscreen />
