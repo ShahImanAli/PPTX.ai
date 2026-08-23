@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Keyboard, Autoplay, Pagination } from 'swiper/modules'
 import type { Swiper as SwiperType } from 'swiper'
+import { SlidePreview } from './slide-preview'
 
 import 'swiper/css'
 import 'swiper/css/pagination'
@@ -94,25 +95,7 @@ export function SlideshowModal({
         {slides.map((slide) => (
           <SwiperSlide key={slide.id}>
             <div className="relative w-full h-full">
-              {slide.imageUrl && (
-                <img
-                  src={slide.imageUrl}
-                  alt=""
-                  className="absolute inset-0 w-full h-full object-cover opacity-40"
-                />
-              )}
-              <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-black/60" />
-
-              <div className="relative z-10 h-full flex flex-col justify-center items-center px-8 md:px-16 lg:px-24">
-                <div className="max-w-5xl w-full text-center">
-                  <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-white mb-8 leading-tight">
-                    {slide.title}
-                  </h1>
-                  <div className="text-xl md:text-2xl lg:text-3xl text-white/80 whitespace-pre-line leading-relaxed max-w-3xl mx-auto">
-                    {slide.content}
-                  </div>
-                </div>
-              </div>
+              <SlidePreview slide={slide} isFullscreen />
 
               {slide.notes && showControls && (
                 <div className="absolute bottom-32 left-1/2 -translate-x-1/2 max-w-2xl px-6 py-3 bg-black/60 backdrop-blur-sm rounded-xl z-20">
