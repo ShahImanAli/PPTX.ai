@@ -315,15 +315,6 @@ function PresentationDetailPage() {
                       variant="outline"
                       size="sm"
                       className="rounded-xl gap-1"
-                      onClick={toggleFullscreen}
-                    >
-                      <Maximize className="size-4" />
-                      <span className="hidden sm:inline">Fullscreen</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-xl gap-1"
                       onClick={handleExportPptx}
                       disabled={isExporting}
                     >
