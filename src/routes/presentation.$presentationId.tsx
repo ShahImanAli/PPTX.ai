@@ -551,7 +551,7 @@ function PresentationDetailPage() {
                     size="icon"
                     title="Fullscreen (Esc to exit)"
                     aria-label="Toggle fullscreen"
-                    className="absolute top-3 right-3 rounded-lg"
+                    className="absolute top-3 right-3 z-20 rounded-lg shadow-md"
                     onClick={toggleFullscreen}
                   >
                     <Maximize className="size-4" />
