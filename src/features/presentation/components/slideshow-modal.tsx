@@ -75,7 +75,7 @@ export function SlideshowModal({
   }, [])
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] bg-black">
+    <div className="fixed inset-0 z-100 bg-black">
       <Swiper
         modules={[Keyboard, Autoplay, Pagination]}
         keyboard={{ enabled: true }}

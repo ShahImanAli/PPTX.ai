@@ -643,7 +643,7 @@ function PresentationDetailPage() {
       {isFullscreen &&
         activeSlide &&
         createPortal(
-          <div className="fixed inset-0 z-[100] bg-black">
+          <div className="fixed inset-0 z-100 bg-black">
             <SlidePreview slide={activeSlide} isFullscreen />
             <Button
               variant="secondary"
