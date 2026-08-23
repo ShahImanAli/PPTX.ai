@@ -1,4 +1,8 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  Link,
+  useNavigate,
+} from '@tanstack/react-router'
 import {
   LAYOUT_OPTIONS,
   SLIDE_STYLES,
@@ -34,9 +38,6 @@ import {
 import { Slider } from '#/components/ui/slider'
 import { Textarea } from '#/components/ui/textarea'
 import {
-  Link,
-} from '@tanstack/react-router'
-import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
@@ -49,7 +50,34 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { SlideshowModal } from '#/features/presentation/components/slideshow-modal'
+
+type FullscreenElement = Omit<
+  HTMLElement,
+  'requestFullscreen' | 'webkitRequestFullscreen'
+> & {
+  requestFullscreen?: () => Promise<void>
+  webkitRequestFullscreen?: () => Promise<void>
+}
+
+type FullscreenDocument = Omit<
+  Document,
+  | 'fullscreenElement'
+  | 'webkitFullscreenElement'
+  | 'exitFullscreen'
+  | 'webkitExitFullscreen'
+> & {
+  fullscreenElement?: Element | null
+  webkitFullscreenElement?: Element | null
+  exitFullscreen?: () => Promise<void>
+  webkitExitFullscreen?: () => Promise<void>
+}
+
+const isNativeFullscreenActive = () => {
+  const doc = document as FullscreenDocument
+  return Boolean(doc.fullscreenElement || doc.webkitFullscreenElement)
+}
 
 
 export const Route = createFileRoute('/presentation/$presentationId')({
@@ -80,8 +108,70 @@ function PresentationDetailPage() {
     onDeleted: () => navigate({ to: '/' }),
   })
 
+  const exitFullscreen = useCallback(() => {
+    setIsFullscreen(false)
+    const doc = document as FullscreenDocument
+    try {
+      if (doc.fullscreenElement) {
+        void doc.exitFullscreen?.().catch(() => {})
+      } else if (doc.webkitFullscreenElement) {
+        void doc.webkitExitFullscreen?.()
+      }
+    } catch {
+      // In-page overlay still closes regardless
+    }
+  }, [])
+
+  const enterFullscreen = useCallback(() => {
+    setIsFullscreen(true)
+    const el = document.documentElement as FullscreenElement
+    try {
+      if (el.requestFullscreen) {
+        void el.requestFullscreen().catch(() => {})
+      } else if (el.webkitRequestFullscreen) {
+        void el.webkitRequestFullscreen()
+      }
+    } catch {
+      // Native fullscreen can be blocked (iframe permissions, insecure origin);
+      // the in-page overlay below keeps working in that case.
+    }
+  }, [])
+
   const toggleFullscreen = useCallback(() => {
-    setIsFullscreen((prev) => !prev)
+    if (isFullscreen) {
+      exitFullscreen()
+    } else {
+      enterFullscreen()
+    }
+  }, [isFullscreen, enterFullscreen, exitFullscreen])
+
+  // Keep React state in sync when the user leaves native fullscreen via
+  // Esc / F11 / browser UI (covers deployed sites where native FS is used).
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      if (!isNativeFullscreenActive()) {
+        setIsFullscreen(false)
+      }
+    }
+    document.addEventListener('fullscreenchange', onFullscreenChange)
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange)
+    return () => {
+      document.removeEventListener('fullscreenchange', onFullscreenChange)
+      document.removeEventListener(
+        'webkitfullscreenchange',
+        onFullscreenChange,
+      )
+    }
+  }, [])
+
+  // Never leave the browser stuck in native fullscreen after navigating away.
+  useEffect(() => {
+    return () => {
+      if (isNativeFullscreenActive()) {
+        const result = (document as FullscreenDocument).exitFullscreen?.()
+        result?.catch(() => {})
+      }
+    }
   }, [])
 
   const goToSlide = useCallback(
@@ -95,7 +185,7 @@ function PresentationDetailPage() {
     if (!isFullscreen) return
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        setIsFullscreen(false)
+        exitFullscreen()
       } else if (e.key === 'ArrowRight') {
         goToSlide(activeSlideIndex + 1)
       } else if (e.key === 'ArrowLeft') {
@@ -104,7 +194,7 @@ function PresentationDetailPage() {
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [isFullscreen, activeSlideIndex, goToSlide])
+  }, [isFullscreen, activeSlideIndex, goToSlide, exitFullscreen])
 
   // Lock body scroll when fullscreen overlay is active
   useEffect(() => {
@@ -544,44 +634,47 @@ function PresentationDetailPage() {
         />
       )}
 
-      {isFullscreen && activeSlide && (
-        <div className="fixed inset-0 z-50 bg-black">
-          <SlidePreview slide={activeSlide} isFullscreen />
-          <Button
-            variant="secondary"
-            size="icon"
-            title="Exit fullscreen (Esc)"
-            aria-label="Exit fullscreen"
-            className="absolute top-4 right-4 z-20 rounded-xl bg-black/50 text-white hover:text-white hover:bg-black/70 border border-white/20 shadow-lg"
-            onClick={toggleFullscreen}
-          >
-            <Minimize className="size-5" />
-          </Button>
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">
+      {isFullscreen &&
+        activeSlide &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] bg-black">
+            <SlidePreview slide={activeSlide} isFullscreen />
             <Button
-              variant="ghost"
+              variant="secondary"
               size="icon"
-              className="rounded-lg text-white hover:text-white hover:bg-white/20 bg-black/40"
-              disabled={activeSlideIndex === 0}
-              onClick={() => goToSlide(activeSlideIndex - 1)}
+              title="Exit fullscreen (Esc)"
+              aria-label="Exit fullscreen"
+              className="absolute top-4 right-4 z-20 rounded-xl bg-black/50 text-white hover:text-white hover:bg-black/70 border border-white/20 shadow-lg"
+              onClick={toggleFullscreen}
             >
-              <ChevronLeft className="size-6" />
+              <Minimize className="size-5" />
             </Button>
-            <span className="text-sm text-white/90 tabular-nums bg-black/40 px-3 py-1 rounded-full">
-              {activeSlideIndex + 1} / {slides.length}
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-lg text-white hover:text-white hover:bg-white/20 bg-black/40"
-              disabled={activeSlideIndex >= slides.length - 1}
-              onClick={() => goToSlide(activeSlideIndex + 1)}
-            >
-              <ChevronRight className="size-6" />
-            </Button>
-          </div>
-        </div>
-      )}
+            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 z-20">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-lg text-white hover:text-white hover:bg-white/20 bg-black/40"
+                disabled={activeSlideIndex === 0}
+                onClick={() => goToSlide(activeSlideIndex - 1)}
+              >
+                <ChevronLeft className="size-6" />
+              </Button>
+              <span className="text-sm text-white/90 tabular-nums bg-black/40 px-3 py-1 rounded-full">
+                {activeSlideIndex + 1} / {slides.length}
+              </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-lg text-white hover:text-white hover:bg-white/20 bg-black/40"
+                disabled={activeSlideIndex >= slides.length - 1}
+                onClick={() => goToSlide(activeSlideIndex + 1)}
+              >
+                <ChevronRight className="size-6" />
+              </Button>
+            </div>
+          </div>,
+          document.body,
+        )}
     </main>
   )
 }

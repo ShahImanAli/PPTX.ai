@@ -1,6 +1,7 @@
 import { Button } from '#/components/ui/button'
 import { ChevronLeft, ChevronRight, Pause, Play, X } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { Keyboard, Autoplay, Pagination } from 'swiper/modules'
 import type { Swiper as SwiperType } from 'swiper'
@@ -73,8 +74,8 @@ export function SlideshowModal({
     }
   }, [])
 
-  return (
-    <div className="fixed inset-0 z-50 bg-black">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] bg-black">
       <Swiper
         modules={[Keyboard, Autoplay, Pagination]}
         keyboard={{ enabled: true }}
@@ -167,6 +168,7 @@ export function SlideshowModal({
       >
         <X className="size-6" />
       </Button>
-    </div>
+    </div>,
+    document.body,
   )
 }
