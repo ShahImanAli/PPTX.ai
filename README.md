@@ -228,8 +228,3 @@ npm run generate-routes
 
 The app targets **Vercel** (`vercel.json` sets the build command to `prisma generate && npm run build`). Configure all environment variables in your hosting provider, and ensure **Inngest** is set up to serve the `generate-presentation` function for background jobs.
 
----
-
-## 📄 License
-
-Private project. © 2026 PPTX.ai. All rights reserved.
